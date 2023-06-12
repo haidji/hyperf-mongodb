@@ -5,8 +5,7 @@ composer require haidji/hyperf-mongodb
 ```
 
 ## config 
-在/config/autoload目录里面创建文件 mongodb.php
-添加以下内容
+Create a file mongodb.php in the /config/autoload directory and add the following content
 ```php
 return [
     'default' => [
@@ -16,7 +15,7 @@ return [
              'port' => env('MONGODB_PORT', 27017),
              'db' => env('MONGODB_DB', 'test'),
              'authMechanism' => 'SCRAM-SHA-256',
-             //设置复制集,没有不设置
+             //Set the replication set, if not set
              //'replica' => 'rs0',
             'pool' => [
                 'min_connections' => 3,
@@ -31,9 +30,9 @@ return [
 ```
 
 
-# 使用案例
+# Use Cases
 
-使用注解，自动加载 
+Use annotations to automatically load 
 **\Hyperf\Mongodb\MongoDb** 
 ```php
 /**
@@ -44,11 +43,11 @@ return [
 ```
 
 #### **tips:** 
-查询的值，是严格区分类型，string、int类型的哦
+The value of the query is to strictly distinguish the type, string, int type
 
-### 新增
+### Add
 
-单个添加
+Single add
 ```php
 $insert = [
             'account' => '',
@@ -57,7 +56,7 @@ $insert = [
 $this->$mongoDbClient->insert('fans',$insert);
 ```
 
-批量添加
+Batch add
 ```php
 $insert = [
             [
@@ -72,31 +71,31 @@ $insert = [
 $this->$mongoDbClient->insertAll('fans',$insert);
 ```
 
-### 查询
+### Inquire
 
 ```php
 $where = ['account'=>'1112313423'];
 $result = $this->$mongoDbClient->fetchAll('fans', $where);
 ```
 
-### 分页查询
+### Paging query
 ```php
 $list = $this->$mongoDbClient->fetchPagination('article', 10, 0, ['author' => $author]);
 ```
 
-### 更新
+### Renew
 ```php
 $where = ['account'=>'1112313423'];
 $updateData = [];
 
-$this->$mongoDbClient->updateColumn('fans', $where,$updateData); // 只更新数据满足$where的行的列信息中在$newObject中出现过的字段
-$this->$mongoDbClient->updateRow('fans',$where,$updateData);// 更新数据满足$where的行的信息成$newObject
+$this->$mongoDbClient->updateColumn('fans', $where,$updateData); // // Only update the fields that appear in $newObject in the column information of the row whose data satisfies $where
+$this->$mongoDbClient->updateRow('fans',$where,$updateData);// update the information of the row whose data satisfies $where into $newObject
 ```
-### 删除
+### Delete
 
 ```php
 $where = ['account'=>'1112313423'];
-$all = true; // 为false只删除匹配的一条，true删除多条
+$all = true; // false only deletes one match, true deletes multiple
 $this->$mongoDbClient->delete('fans',$where,$all);
 ```
 
@@ -109,13 +108,13 @@ $count = $this->$mongoDbClient->count('fans', $filter);
 
 
 
-### Command，执行更复杂的mongo命令
+### Command, execute more complex mongo commands
 
-**sql** 和 **mongodb** 关系对比图
+**sql** vs **mongodb**
 
 |   SQL  | MongoDb |
 | --- | --- |
-|   WHERE  |  $match (match里面可以用and，or，以及逻辑判断，但是好像不能用where)  |
+|   WHERE  |  $match (and, or, and logical judgment can be used in match, but it seems that where cannot be used)  |
 |   GROUP BY  | $group  |
 |   HAVING  |  $match |
 |   SELECT  |  $project  |
