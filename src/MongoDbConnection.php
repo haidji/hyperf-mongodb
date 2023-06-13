@@ -57,40 +57,34 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     {
         // TODO: Implement reconnect() method.
         try {
-            /**
-             * http://php.net/manual/zh/mongodb-driver-manager.construct.php
-             */
-
             $username = $this->config['username'];
             $password = $this->config['password'];
             if (!empty($username) && !empty($password)) {
                 $uri = sprintf(
-                    'mongodb://%s:%s@%s:%d/%s',
+                    'mongodb://%s:%s@%s:%d/',
                     $username,
                     $password,
                     $this->config['host'],
-                    $this->config['port'],
-                    $this->config['db']
+                    $this->config['port']
                 );
             } else {
                 $uri = sprintf(
-                    'mongodb://%s:%d/%s',
+                    'mongodb://%s:%d',
                     $this->config['host'],
-                    $this->config['port'],
-                    $this->config['db']
+                    $this->config['port']
                 );
             }
             $urlOptions = [];
-            //数据集
             $replica = isset($this->config['replica']) ? $this->config['replica'] : null;
             if ($replica) {
                 $urlOptions['replicaSet'] = $replica;
             }
+
             $this->connection = new Manager($uri, $urlOptions);
         } catch (InvalidArgumentException $e) {
-            throw MongoDBException::managerError('mongodb 连接参数错误:' . $e->getMessage());
+            throw MongoDBException::managerError('mongodb Connection parameter error:' . $e->getMessage());
         } catch (RuntimeException $e) {
-            throw MongoDBException::managerError('mongodb uri格式错误:' . $e->getMessage());
+            throw MongoDBException::managerError('mongodb wrong uri format:' . $e->getMessage());
         }
         $this->lastUseTime = microtime(true);
         return true;
@@ -105,22 +99,11 @@ class MongoDbConnection extends Connection implements ConnectionInterface
         return true;
     }
 
-
-    /**
-     * 查询返回结果的全部数据
-     *
-     * @param string $namespace
-     * @param array $filter
-     * @param array $options
-     * @return array
-     * @throws MongoDBException
-     */
     public function executeQueryAll(string $namespace, array $filter = [], array $options = [])
     {
         if (!empty($filter['_id']) && !($filter['_id'] instanceof ObjectId)) {
             $filter['_id'] = new ObjectId($filter['_id']);
         }
-        // 查询数据
         $result = [];
         try {
             $query = new Query($filter, $options);
@@ -142,7 +125,6 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     }
 
     /**
-     * 返回分页数据，默认每页10条
      *
      * @param string $namespace
      * @param int $limit
@@ -157,11 +139,9 @@ class MongoDbConnection extends Connection implements ConnectionInterface
         if (!empty($filter['_id']) && !($filter['_id'] instanceof ObjectId)) {
             $filter['_id'] = new ObjectId($filter['_id']);
         }
-        // 查询数据
         $data = [];
         $result = [];
 
-        //每次最多返回10条记录
         if (!isset($options['limit']) || (int)$options['limit'] <= 0) {
             $options['limit'] = $limit;
         }
@@ -196,8 +176,6 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     }
 
     /**
-     * 数据插入
-     * http://php.net/manual/zh/mongodb-driver-bulkwrite.insert.php
      * $data1 = ['title' => 'one'];
      * $data2 = ['_id' => 'custom ID', 'title' => 'two'];
      * $data3 = ['_id' => new MongoDB\BSON\ObjectId, 'title' => 'three'];
@@ -224,8 +202,6 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     }
 
     /**
-     * 批量数据插入
-     * http://php.net/manual/zh/mongodb-driver-bulkwrite.insert.php
      * $data = [
      * ['title' => 'one'],
      * ['_id' => 'custom ID', 'title' => 'two'],
@@ -255,8 +231,6 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     }
 
     /**
-     * 数据更新,效果是满足filter的行,只更新$newObj中的$set出现的字段
-     * http://php.net/manual/zh/mongodb-driver-bulkwrite.update.php
      * $bulk->update(
      *   ['x' => 2],
      *   ['$set' => ['y' => 3]],
@@ -296,8 +270,6 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     }
 
     /**
-     * 数据更新, 效果是满足filter的行数据更新成$newObj
-     * http://php.net/manual/zh/mongodb-driver-bulkwrite.update.php
      * $bulk->update(
      *   ['x' => 2],
      *   [['y' => 3]],
@@ -337,7 +309,6 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     }
 
     /**
-     * 删除数据
      *
      * @param string $namespace
      * @param array $filter
@@ -367,7 +338,6 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     }
 
     /**
-     * 获取collection 中满足条件的条数
      *
      * @param string $namespace
      * @param array $filter
@@ -401,7 +371,6 @@ class MongoDbConnection extends Connection implements ConnectionInterface
 
 
     /**
-     * 获取collection 中满足条件的条数
      *
      * @param string $namespace
      * @param array $filter
@@ -429,7 +398,6 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     }
 
     /**
-     * 判断当前的数据库连接是否已经超时
      *
      * @return bool
      * @throws \MongoDB\Driver\Exception\Exception
@@ -455,37 +423,33 @@ class MongoDbConnection extends Connection implements ConnectionInterface
     {
         switch ($e) {
             case ($e instanceof InvalidArgumentException):
-                {
-                    throw MongoDBException::managerError('mongo argument exception: ' . $e->getMessage());
-                }
+            {
+                throw MongoDBException::managerError('mongo argument exception: ' . $e->getMessage());
+            }
             case ($e instanceof AuthenticationException):
-                {
-                    throw MongoDBException::managerError('mongo数据库连接授权失败:' . $e->getMessage());
-                }
+            {
+                throw MongoDBException::managerError('Mongo database connection authorization failed:' . $e->getMessage());
+            }
             case ($e instanceof ConnectionException):
-                {
-                    /**
-                     * https://cloud.tencent.com/document/product/240/4980
-                     * 存在连接失败的，那么进行重连
-                     */
-                    for ($counts = 1; $counts <= 5; $counts++) {
-                        try {
-                            $this->reconnect();
-                        } catch (\Exception $e) {
-                            continue;
-                        }
-                        break;
+            {
+                for ($counts = 1; $counts <= 5; $counts++) {
+                    try {
+                        $this->reconnect();
+                    } catch (\Exception $e) {
+                        continue;
                     }
-                    return true;
+                    break;
                 }
+                return true;
+            }
             case ($e instanceof RuntimeException):
-                {
-                    throw MongoDBException::managerError('mongo runtime exception: ' . $e->getMessage());
-                }
+            {
+                throw MongoDBException::managerError('mongo runtime exception: ' . $e->getMessage());
+            }
             default:
-                {
-                    throw MongoDBException::managerError('mongo unexpected exception: ' . $e->getMessage());
-                }
+            {
+                throw MongoDBException::managerError('mongo unexpected exception: ' . $e->getMessage());
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Hyperf\Mongodb;
 
 use Hyperf\Mongodb\Exception\MongoDBException;
 use Hyperf\Mongodb\Pool\PoolFactory;
-use Hyperf\Utils\Context;
+use Hyperf\Context\Context;
 
 /**
  * Class MongoDb
@@ -52,8 +52,6 @@ class MongoDb
     }
 
     /**
-     * 返回满足filer的分页数据
-     *
      * @param string $namespace
      * @param int $limit
      * @param int $currentPage
@@ -76,7 +74,6 @@ class MongoDb
     }
 
     /**
-     * 批量插入
      * @param $namespace
      * @param array $data
      * @return bool|string
@@ -99,7 +96,6 @@ class MongoDb
     }
 
     /**
-     * 数据插入数据库
      *
      * @param $namespace
      * @param array $data
@@ -120,7 +116,6 @@ class MongoDb
     }
 
     /**
-     * 更新数据满足$filter的行的信息成$newObject
      *
      * @param $namespace
      * @param array $filter
@@ -142,7 +137,6 @@ class MongoDb
     }
 
     /**
-     * 只更新数据满足$filter的行的列信息中在$newObject中出现过的字段
      *
      * @param $namespace
      * @param array $filter
@@ -164,7 +158,6 @@ class MongoDb
     }
 
     /**
-     * 删除满足条件的数据，默认只删除匹配条件的第一条记录，如果要删除多条$limit=true
      *
      * @param string $namespace
      * @param array $filter
@@ -186,7 +179,6 @@ class MongoDb
     }
 
     /**
-     * 返回collection中满足条件的数量
      *
      * @param string $namespace
      * @param array $filter
@@ -208,7 +200,6 @@ class MongoDb
 
 
     /**
-     * 聚合查询
      * @param string $namespace
      * @param array $filter
      * @return bool
