@@ -11,7 +11,7 @@ return [
     'default' => [
              'username' => env('MONGODB_USERNAME', ''),
              'password' => env('MONGODB_PASSWORD', ''),
-             'host' => env('MONGODB_HOST', '127.0.0.1'),
+             'host' => env('MONGODB_HOST', '127.0.0.1'), //In case you use docker, please use private IP address insteads of 127.0.0.1
              'port' => env('MONGODB_PORT', 27017),
              'db' => env('MONGODB_DB', 'test'),
              'authMechanism' => 'SCRAM-SHA-256',

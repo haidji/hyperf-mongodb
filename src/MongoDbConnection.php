@@ -124,6 +124,13 @@ class MongoDbConnection extends Connection implements ConnectionInterface
         }
     }
 
+    public function findOne(string $namespace, array $filter = [], array $options = [])
+    {
+        $options['limit'] = 1;
+        $item = $this->executeQueryAll($namespace,$filter,$options);
+        return $item;
+    }
+
     /**
      *
      * @param string $namespace
